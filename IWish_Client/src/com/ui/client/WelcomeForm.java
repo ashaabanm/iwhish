@@ -5,13 +5,14 @@ import com.ui.client.panels.ItemPanel;
 import com.ui.client.panels.OthersPanel;
 import com.ui.client.panels.WishListPanel;
 import com.client.helper.Helper;
+import com.ui.client.panels.FriendRequestPanel;
 import java.awt.CardLayout;
 import javax.swing.JPanel;
 
 public class WelcomeForm extends javax.swing.JFrame {
 
     CardLayout cardLayout;
-
+    FriendRequestPanel friendRequestPanel;
     public WelcomeForm() {
         initComponents();
         setLocationRelativeTo(null);
@@ -31,6 +32,7 @@ public class WelcomeForm extends javax.swing.JFrame {
         btn_showItems = new javax.swing.JButton();
         btn_showOthers = new javax.swing.JButton();
         btn_friendList = new javax.swing.JButton();
+        btn_friendRequests = new javax.swing.JButton();
         Panel_container = new javax.swing.JPanel();
         DefaultPanel = new javax.swing.JPanel();
 
@@ -69,18 +71,26 @@ public class WelcomeForm extends javax.swing.JFrame {
             }
         });
 
+        btn_friendRequests.setText("Friend Request");
+        btn_friendRequests.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_friendRequestsActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(btn_wishList, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btn_friendRequests, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btn_friendList, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btn_showOthers, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btn_showItems, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(20, Short.MAX_VALUE))
+                    .addComponent(btn_wishList, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btn_showItems, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btn_showOthers, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -91,9 +101,11 @@ public class WelcomeForm extends javax.swing.JFrame {
                 .addComponent(btn_wishList)
                 .addGap(18, 18, 18)
                 .addComponent(btn_friendList)
-                .addGap(18, 18, 18)
+                .addGap(15, 15, 15)
+                .addComponent(btn_friendRequests)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btn_showOthers)
-                .addContainerGap(98, Short.MAX_VALUE))
+                .addContainerGap(67, Short.MAX_VALUE))
         );
 
         jPanel1.add(jPanel4, java.awt.BorderLayout.LINE_START);
@@ -104,7 +116,7 @@ public class WelcomeForm extends javax.swing.JFrame {
         DefaultPanel.setLayout(DefaultPanelLayout);
         DefaultPanelLayout.setHorizontalGroup(
             DefaultPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 310, Short.MAX_VALUE)
+            .addGap(0, 420, Short.MAX_VALUE)
         );
         DefaultPanelLayout.setVerticalGroup(
             DefaultPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -122,7 +134,7 @@ public class WelcomeForm extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 545, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(Label_title, javax.swing.GroupLayout.PREFERRED_SIZE, 270, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE)))
@@ -155,6 +167,11 @@ public class WelcomeForm extends javax.swing.JFrame {
     private void btn_showOthersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_showOthersActionPerformed
         this.cardLayout.show(Panel_container, "othersPanel");
     }//GEN-LAST:event_btn_showOthersActionPerformed
+
+    private void btn_friendRequestsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_friendRequestsActionPerformed
+        this.cardLayout.show(Panel_container, "friendRequestPanel");
+        this.friendRequestPanel.getFreindRequest();
+    }//GEN-LAST:event_btn_friendRequestsActionPerformed
 
     /**
      * @param args the command line arguments
@@ -195,18 +212,22 @@ public class WelcomeForm extends javax.swing.JFrame {
         JPanel itemPanel = new ItemPanel();
         JPanel wishListPanel = new WishListPanel();
         JPanel friendListPanel = new FriendListPanel();
+        friendRequestPanel = new FriendRequestPanel();
         JPanel othersPanel = new OthersPanel();
 
         Panel_container.add(itemPanel, "itemPanel");
         Panel_container.add(wishListPanel, "wishListPanel");
         Panel_container.add(friendListPanel, "friendListPanel");
         Panel_container.add(othersPanel, "othersPanel");
+        Panel_container.add(friendRequestPanel, "friendRequestPanel");
+
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel DefaultPanel;
     private javax.swing.JLabel Label_title;
     private javax.swing.JPanel Panel_container;
     private javax.swing.JButton btn_friendList;
+    private javax.swing.JButton btn_friendRequests;
     private javax.swing.JButton btn_showItems;
     private javax.swing.JButton btn_showOthers;
     private javax.swing.JButton btn_wishList;

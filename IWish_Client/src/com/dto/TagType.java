@@ -8,6 +8,7 @@ public enum TagType {
     add_friend,
     accept_friend,
     ignore_friend,
+    friend_requests,
     contribute,
     show_profile,
     show_wish_list,

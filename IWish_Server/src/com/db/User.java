@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -61,6 +62,28 @@ public class User {
 
     }
 
+    public void updateFriendRequestStatus(int userId, int friendId, int status) {
+        PreparedStatement pst = null;
+        try {
+            if (status == 0) { //when friend accept this user
+                pst = con.prepareStatement("Update FriendList Set REQUEST_STATUS =1  "
+                        + "where USER_ID = ? AND  FRIEND_ID = ? ");
+            } else {
+                if (status == 1) { //when friend decline this user
+                    pst = con.prepareStatement("Delete From  FriendList  where USER_ID = ? AND  FRIEND_ID = ?");
+                }
+            }
+            pst.setInt(1, userId);
+            pst.setInt(2, friendId);
+            
+            ResultSet rs = pst.executeQuery();
+            
+            pst.close();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
     public UserDTO getByUserNamePass(String userName, String password) {
         UserDTO userDTO = new UserDTO();
         try {
@@ -88,4 +111,36 @@ public class User {
         return userDTO;
     }
 
+    public Vector<UserDTO> getFriendRequestsById(int userId) {
+        Vector<UserDTO> users = new Vector<>();
+        try {
+            PreparedStatement pst = con.prepareStatement("select USERS.ID ,USERNAME ,PASSWORD ,FIRST_NAME,LAST_NAME,EMAIL,CITY ,BIRTH_DATE,WALLET\n"
+                    + "From Users , FriendList\n"
+                    + "where USERS.ID = FRIENDLIST.USER_ID \n"
+                    + "AND FRIENDLIST.FRIEND_ID = ? AND REQUEST_STATUS=0 ", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            pst.setInt(1, userId);
+
+            ResultSet usersList = pst.executeQuery();
+
+            while (usersList.next()) {
+                UserDTO userDTO = new UserDTO();
+
+                userDTO.id = usersList.getInt("ID");
+                userDTO.userName = usersList.getString("USERNAME");
+                userDTO.password = usersList.getString("PASSWORD");
+                userDTO.firstName = usersList.getString("FIRST_NAME");
+                userDTO.lastName = usersList.getString("LAST_NAME");
+                userDTO.email = usersList.getString("EMAIL");
+                userDTO.city = usersList.getString("CITY");
+                userDTO.birthDate = new SimpleDateFormat("dd/MM/yyyy").format(usersList.getDate("BIRTH_DATE"));
+                userDTO.wallet = usersList.getInt("WALLET");
+
+                users.add(userDTO);
+            }
+            pst.close();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return users;
+    }
 }
