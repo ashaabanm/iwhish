@@ -114,7 +114,7 @@ public class AddItemForm extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        Item item = new Item(DbHelper.con);
+        Item item = new Item(DbHelper.getDbCon());
         ItemDTO itemDTO = new ItemDTO();
         itemDTO.name = txt_name.getText();
         itemDTO.price = Integer.parseInt(txt_price.getText());
