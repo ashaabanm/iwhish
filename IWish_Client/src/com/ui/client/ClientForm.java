@@ -3,9 +3,12 @@ package com.ui.client;
 import com.client.helper.ServerConnection;
 
 public class ClientForm extends javax.swing.JFrame {
+
     ServerConnection connection;
+
     public ClientForm() {
         initComponents();
+        connection = new ServerConnection();
         setLocationRelativeTo(null);
     }
 
@@ -67,13 +70,13 @@ public class ClientForm extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btn_signUpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_signUpActionPerformed
-        SignUpForm signUpForm = new  SignUpForm();
+        SignUpForm signUpForm = new SignUpForm(connection);
         signUpForm.show();
         dispose();
     }//GEN-LAST:event_btn_signUpActionPerformed
 
     private void btn_loginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_loginActionPerformed
-        LoginForm loginForm = new LoginForm();
+        LoginForm loginForm = new LoginForm(connection);
         loginForm.setVisible(true);
         dispose();
     }//GEN-LAST:event_btn_loginActionPerformed

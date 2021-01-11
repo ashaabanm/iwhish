@@ -28,9 +28,9 @@ public class FriendRequestPanel extends javax.swing.JPanel {
     ServerConnection connection;
     DefaultListModel model;
 
-    public FriendRequestPanel() {
+    public FriendRequestPanel(ServerConnection connection) {
         initComponents();
-        connection = new ServerConnection();
+        this.connection = connection;
         model = new DefaultListModel();
         this.requestList.setModel(model);
     }
@@ -41,7 +41,7 @@ public class FriendRequestPanel extends javax.swing.JPanel {
         header.fromId = Helper.mainUserObj.id;
 
         connection.pos.println(Helper.convertToJson(header));
-
+        connection.pos.flush();
         // create thread to accept responses from server
         SwingWorker sw = new SwingWorker() {
             @Override
@@ -51,18 +51,22 @@ public class FriendRequestPanel extends javax.swing.JPanel {
                     @Override
                     public void run() {
                         try {
+
                             String response = connection.dis.readLine();//read from server
+                            System.out.println("request : " + response);
+                            if (response.contains("header")) {
+                                // map header which is come from server
+                                HeaderMapDTO headerMap = new Gson().fromJson(response, HeaderMapDTO.class);
 
-                            // map header which is come from server
-                            FriendListDTO friendListDTO = new Gson().fromJson(response, FriendListDTO.class);
-
-                            // check status and if there are user id or not 
-                            if (friendListDTO.header.toId == Helper.mainUserObj.id && friendListDTO.header.tag == TagType.friend_requests
-                                    && friendListDTO.header.actionType == TagType.success) {
-                                model = new DefaultListModel();
-                                requestList.setModel(model);
-                                for (UserDTO user : friendListDTO.usersList) {
-                                    model.addElement(user.userName + "@" + user.id);
+                                // check status and if there are user id or not 
+                                if (headerMap.header.toId == Helper.mainUserObj.id && headerMap.header.tag == TagType.friend_requests
+                                        && headerMap.header.actionType == TagType.success) {
+                                    FriendListDTO friendListDTO = new Gson().fromJson(response, FriendListDTO.class);
+                                    model = new DefaultListModel();
+                                    requestList.setModel(model);
+                                    for (UserDTO user : friendListDTO.usersList) {
+                                        model.addElement(user.userName + "@" + user.id);
+                                    }
                                 }
                             }
 
@@ -121,6 +125,9 @@ public class FriendRequestPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void requestListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_requestListMouseClicked
+        if (requestList.getSelectedValue() == null) {
+            return;
+        }
         int user_id = Integer.parseInt(requestList.getSelectedValue().toString().split("@")[1]);
         int opt = JOptionPane.showConfirmDialog(this, "Press Yes for Accept \nPress No for Decline",
                 "Accept Reqest", JOptionPane.YES_NO_CANCEL_OPTION);
@@ -139,24 +146,29 @@ public class FriendRequestPanel extends javax.swing.JPanel {
                 connection.pos.println(Helper.convertToJson(rquestDTO));
             }
         }
-        
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    String response = connection.dis.readLine();//read from server
-                    System.out.println(response);
-                    // map header which is come from server
-                    HeaderDTO header = new Gson().fromJson(response, HeaderDTO.class);
-                    if (header.toId == Helper.mainUserObj.id && header.tag == TagType.accept_friend) {
-                        getFreindRequest();
+
+        if (opt == 1 || opt == 0) {
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        String response = connection.dis.readLine();//read from server
+                        System.out.println(response);
+                        // map header which is come from server
+                        if (response.contains("header")) {
+                            HeaderMapDTO headerMap = new Gson().fromJson(response, HeaderMapDTO.class);
+                            if (headerMap.header.toId == Helper.mainUserObj.id && headerMap.header.tag == TagType.accept_friend) {
+                                getFreindRequest();
+                            }
+                        }
+                    } catch (IOException ex) {
+                        System.out.println("here error");
                     }
-                } catch (IOException ex) {
-                    System.out.println("here error");
                 }
-            }
-        });
-        t.start();
+            });
+            t.start();
+        }
+
     }//GEN-LAST:event_requestListMouseClicked
 
 

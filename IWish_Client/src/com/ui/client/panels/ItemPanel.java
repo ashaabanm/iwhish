@@ -5,17 +5,79 @@
  */
 package com.ui.client.panels;
 
+import com.client.helper.Helper;
+import com.client.helper.ServerConnection;
+import com.dto.AddItemDTO;
+import com.dto.HeaderDTO;
+import com.dto.ItemDTO;
+import com.dto.ShowItemDTO;
+import com.dto.TagType;
+import com.google.gson.Gson;
+import java.io.IOException;
+import javax.swing.DefaultListModel;
+import javax.swing.JOptionPane;
+import javax.swing.SwingWorker;
+
 /**
  *
  * @author Ahmed
  */
 public class ItemPanel extends javax.swing.JPanel {
 
+    ServerConnection connection;
+    DefaultListModel model;
+
     /**
      * Creates new form ItemPanel
      */
-    public ItemPanel() {
+    public ItemPanel(ServerConnection connection) {
         initComponents();
+        this.connection =connection;
+        model = new DefaultListModel();
+        this.itemList.setModel(model);
+
+    }
+
+    public void showitems() {
+        HeaderDTO header = new HeaderDTO();
+        header.tag = TagType.show_items;
+
+        connection.pos.println(Helper.convertToJson(header));
+
+        SwingWorker sw = new SwingWorker() {
+            @Override
+            protected Object doInBackground() {
+                Thread t = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            String response = connection.dis.readLine();//read from server
+                            System.out.println(response);
+
+                            // map header which is come from server
+                            ShowItemDTO mapDTO = new Gson().fromJson(response, ShowItemDTO.class);
+
+                            if (mapDTO.header.tag == TagType.show_items) {
+                                model = new DefaultListModel();
+                                itemList.setModel(model);
+                                for (ItemDTO item : mapDTO.listOfItems) {
+                                    model.addElement(item.name+"@"+item.id);  
+                                    
+                                }
+                            }
+
+                        } catch (IOException ex) {
+                            System.out.println("here error2");
+                        }
+                    }
+                });
+                t.start();
+                return null;
+            }
+
+        };
+        sw.execute();
+
     }
 
     /**
@@ -28,30 +90,87 @@ public class ItemPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        itemList = new javax.swing.JList<>();
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         jLabel1.setText("Items Panel");
+
+        itemList.setToolTipText("");
+        itemList.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                itemListMouseClicked(evt);
+            }
+        });
+        jScrollPane1.setViewportView(itemList);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(146, 146, 146)
+                .addContainerGap()
                 .addComponent(jLabel1)
-                .addContainerGap(161, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(211, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(99, 99, 99)
-                .addComponent(jLabel1)
-                .addContainerGap(179, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel1))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(21, 21, 21)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 244, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(65, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void itemListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_itemListMouseClicked
+        if(itemList.getSelectedValue()==null){
+        return;
+        }
+        int item_id = Integer.parseInt(itemList.getSelectedValue().toString().split("@")[1]);
+        int opt = JOptionPane.showConfirmDialog(this, "Do you want to add this item to your wishlist?",
+                "Add Item", JOptionPane.OK_CANCEL_OPTION);
+        HeaderDTO headerDTO = new HeaderDTO();
+        headerDTO.tag = TagType.add_to_wish_list;
+        headerDTO.fromId = Helper.mainUserObj.id;
+        AddItemDTO additemDTO = new AddItemDTO();
+        additemDTO.header = headerDTO;
+        additemDTO.item_id = item_id;
+         if (opt == 0) {
+            connection.pos.println(Helper.convertToJson(additemDTO));
+             System.out.println("OK");
+                     Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String response = connection.dis.readLine();//read from server
+                    System.out.println(response);
+                    // map header which is come from server
+                    AddItemDTO additem = new Gson().fromJson(response, AddItemDTO.class);
+                    if (additem.header.toId == Helper.mainUserObj.id && additem.header.tag == TagType.add_to_wish_list) {
+                        JOptionPane.showMessageDialog(null, "added successfully");
+                    }
+                } catch (IOException ex) {
+                    System.out.println("here error");
+                }
+            }
+        });
+        t.start();
+        }
+        
+        
+    }//GEN-LAST:event_itemListMouseClicked
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JList<String> itemList;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
 }

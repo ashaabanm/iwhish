@@ -3,6 +3,7 @@ package com.db;
 import com.DTOs.UserDTO;
 import java.sql.Connection;
 import java.sql.Date;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,8 +18,14 @@ public class User {
 
     Connection con;
 
-    public User(Connection con) {
-        this.con = con;
+    public User() {
+        try {
+            DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
+            con = DriverManager.getConnection("jdbc:oracle:thin:@127.0.0.1:1521:xe", "iwish", "iwish");
+
+        } catch (SQLException ex) {
+            System.out.println("user db sql exception");
+        }
     }
 
     public int getNextId() {
@@ -75,9 +82,9 @@ public class User {
             }
             pst.setInt(1, userId);
             pst.setInt(2, friendId);
-            
+
             ResultSet rs = pst.executeQuery();
-            
+
             pst.close();
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -117,9 +124,140 @@ public class User {
             PreparedStatement pst = con.prepareStatement("select USERS.ID ,USERNAME ,PASSWORD ,FIRST_NAME,LAST_NAME,EMAIL,CITY ,BIRTH_DATE,WALLET\n"
                     + "From Users , FriendList\n"
                     + "where USERS.ID = FRIENDLIST.USER_ID \n"
-                    + "AND FRIENDLIST.FRIEND_ID = ? AND REQUEST_STATUS=0 ", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                    + "AND FRIENDLIST.FRIEND_ID = ? AND REQUEST_STATUS=0 ");
             pst.setInt(1, userId);
 
+            ResultSet usersList = pst.executeQuery();
+
+            while (usersList.next()) {
+                UserDTO userDTO = new UserDTO();
+
+                userDTO.id = usersList.getInt("ID");
+                userDTO.userName = usersList.getString("USERNAME");
+                userDTO.password = usersList.getString("PASSWORD");
+                userDTO.firstName = usersList.getString("FIRST_NAME");
+                userDTO.lastName = usersList.getString("LAST_NAME");
+                userDTO.email = usersList.getString("EMAIL");
+                userDTO.city = usersList.getString("CITY");
+                userDTO.birthDate = new SimpleDateFormat("dd/MM/yyyy").format(usersList.getDate("BIRTH_DATE"));
+                userDTO.wallet = usersList.getInt("WALLET");
+
+                users.add(userDTO);
+            }
+            pst.close();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return users;
+    }
+
+    public int emailSearch(String search_email) {
+        int id = 0;
+        try {
+            PreparedStatement pst = con.prepareStatement("select id from users where email = ? ");
+            pst.setString(1, search_email);
+
+            ResultSet rs = pst.executeQuery();
+
+            while (rs.next()) {
+                id = rs.getInt("ID");
+                break;
+            }
+            pst.close();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return id;
+
+    }
+
+    public int checkRequest(int from_id, int to_id, String search_email) {
+
+        int friend_id = emailSearch(search_email);
+        int status = 0;
+        try {
+            PreparedStatement pst = con.prepareStatement("select REQUEST_STATUS from FriendList where user_id = ? and friend_id = ?");
+            pst.setInt(1, from_id);
+            pst.setInt(2, friend_id);
+
+            ResultSet rs = pst.executeQuery();
+
+            while (rs.next()) {
+                status = rs.getRow();
+                break;
+
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(User.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return status;
+
+    }
+
+    public String addFriend(int fromid, int toid, String search_email) {
+        int friend_id = emailSearch(search_email);
+        int checkReq = checkRequest(fromid, toid, search_email);
+       
+        String msg = "";
+
+        if (checkReq > 0) {
+            msg = "Request already sent";
+
+        } else {
+            if (friend_id > 0) {
+
+                try {
+                    PreparedStatement pst = con.prepareStatement("insert into FriendList (user_id,friend_id, request_status ) values ( ?, ? , 0) ");
+                    pst.setInt(1, fromid);
+                    pst.setInt(2, friend_id);
+
+                    ResultSet rs = pst.executeQuery();
+                    pst.close();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+
+                msg = "Request send successfully ";
+
+            } else if (friend_id == 0) {
+
+                msg = "User doesnt exist";
+
+            }
+        }
+        return msg;
+
+    }
+
+    public void removeFriend(int from_id, int remove_id) {
+        
+        try {
+            PreparedStatement pst = con.prepareStatement("DELETE FROM FRIENDLIST where (USER_ID = ? AND FRIEND_ID = ?) AND REQUEST_STATUS = 1 ");
+
+            pst.setInt(1, remove_id);
+            pst.setInt(2, from_id);
+
+            pst.execute();
+
+            System.out.println(pst.execute());
+
+            pst.close();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(User.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
+
+    public Vector<UserDTO> getFriendListById(int userId) {
+
+        Vector<UserDTO> users = new Vector<>();
+        try {
+            PreparedStatement pst = con.prepareStatement("select USERS.ID ,USERNAME ,PASSWORD ,FIRST_NAME,LAST_NAME,EMAIL,CITY ,BIRTH_DATE,WALLET From Users , FriendList \n"
+                    + "where FRIENDLIST.FRIEND_ID = ? AND REQUEST_STATUS=1 and FRIENDLIST.USER_ID = USERS.ID ");
+            pst.setInt(1, userId);
             ResultSet usersList = pst.executeQuery();
 
             while (usersList.next()) {

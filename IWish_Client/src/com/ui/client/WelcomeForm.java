@@ -5,6 +5,7 @@ import com.ui.client.panels.ItemPanel;
 import com.ui.client.panels.OthersPanel;
 import com.ui.client.panels.WishListPanel;
 import com.client.helper.Helper;
+import com.client.helper.ServerConnection;
 import com.ui.client.panels.FriendRequestPanel;
 import java.awt.CardLayout;
 import javax.swing.JPanel;
@@ -12,10 +13,22 @@ import javax.swing.JPanel;
 public class WelcomeForm extends javax.swing.JFrame {
 
     CardLayout cardLayout;
+    ItemPanel itemPanel;
+    WishListPanel wishListPanel;
+    FriendListPanel friendListPanel;
     FriendRequestPanel friendRequestPanel;
-    public WelcomeForm() {
+    OthersPanel othersPanel;
+
+    public WelcomeForm(ServerConnection connection) {
         initComponents();
         setLocationRelativeTo(null);
+        
+        itemPanel = new ItemPanel(connection);
+        wishListPanel = new WishListPanel(connection);
+        friendListPanel = new FriendListPanel(connection);
+        friendRequestPanel = new FriendRequestPanel(connection);
+        OthersPanel othersPanel = new OthersPanel();
+        
         cardLayout = (CardLayout) Panel_container.getLayout();
         this.registerPanels();
         Label_title.setText("Welcome " + Helper.mainUserObj.firstName + " " + Helper.mainUserObj.lastName);
@@ -154,18 +167,23 @@ public class WelcomeForm extends javax.swing.JFrame {
 
     private void btn_showItemsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_showItemsActionPerformed
         this.cardLayout.show(Panel_container, "itemPanel");
+        this.itemPanel.showitems();
+
     }//GEN-LAST:event_btn_showItemsActionPerformed
 
     private void btn_wishListActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_wishListActionPerformed
         this.cardLayout.show(Panel_container, "wishListPanel");
+        this.wishListPanel.myWishList();
     }//GEN-LAST:event_btn_wishListActionPerformed
 
     private void btn_friendListActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_friendListActionPerformed
         this.cardLayout.show(Panel_container, "friendListPanel");
+        this.friendListPanel.getMyFriendList();
     }//GEN-LAST:event_btn_friendListActionPerformed
 
     private void btn_showOthersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_showOthersActionPerformed
         this.cardLayout.show(Panel_container, "othersPanel");
+
     }//GEN-LAST:event_btn_showOthersActionPerformed
 
     private void btn_friendRequestsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_friendRequestsActionPerformed
@@ -203,22 +221,17 @@ public class WelcomeForm extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new WelcomeForm().setVisible(true);
+                new WelcomeForm(null).setVisible(true);
             }
         });
     }
 
     private void registerPanels() {
-        JPanel itemPanel = new ItemPanel();
-        JPanel wishListPanel = new WishListPanel();
-        JPanel friendListPanel = new FriendListPanel();
-        friendRequestPanel = new FriendRequestPanel();
-        JPanel othersPanel = new OthersPanel();
 
         Panel_container.add(itemPanel, "itemPanel");
         Panel_container.add(wishListPanel, "wishListPanel");
         Panel_container.add(friendListPanel, "friendListPanel");
-        Panel_container.add(othersPanel, "othersPanel");
+//        Panel_container.add(othersPanel, "othersPanel");
         Panel_container.add(friendRequestPanel, "friendRequestPanel");
 
     }

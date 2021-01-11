@@ -13,10 +13,10 @@ public class LoginForm extends javax.swing.JFrame {
 
     ServerConnection connection;
 
-    public LoginForm() {
+    public LoginForm(ServerConnection connection) {
         initComponents();
         setLocationRelativeTo(null);
-        connection = new ServerConnection();
+        this.connection = connection;
     }
 
     @SuppressWarnings("unchecked")
@@ -110,7 +110,7 @@ public class LoginForm extends javax.swing.JFrame {
                     if (mapDTO.header.toId > 0 && mapDTO.header.actionType.equals(TagType.success)) {
                         Helper.mainUserObj = Helper.fromJsonToUser(response);
                         if (Helper.mainUserObj.userName.equalsIgnoreCase(userDTO.userName)) {
-                            WelcomeForm form = new WelcomeForm();
+                            WelcomeForm form = new WelcomeForm(connection);
                             form.setVisible(true);
                             dispose();
                         }
@@ -154,7 +154,7 @@ public class LoginForm extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new LoginForm().setVisible(true);
+                new LoginForm(null).setVisible(true);
             }
         });
     }
